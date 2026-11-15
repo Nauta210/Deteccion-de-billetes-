@@ -85,9 +85,15 @@ La interfaz está diseñada para el S24 FE (6,7", 1080 × 2340 px, 19,5:9):
   el procedimiento oficial del Banco de la República va aparte, en texto
   secundario. Después vienen la foto, el billete rectificado y el
   diagnóstico.
-* La barra de estado y la de navegación se pintan del color de la
-  aplicación, y hay icono adaptable (One UI lo recorta con su forma) y
-  pantalla de carga oscura.
+* Colores: fondo gris claro (`#E9EBEE`), marcos de gris un poco más
+  oscuro (`#D6D9DE`) detrás del texto para que siempre se lea, títulos en
+  rojo oscuro (`#7A1414`) y botones en tres rojos con texto blanco. El
+  estado del resultado se indica con la franja del borde izquierdo de la
+  tarjeta: verde (sin anomalías), naranja (posible reproducción) o gris.
+  Los colores están al inicio de `app/main.py` por si se quieren ajustar.
+* La barra de estado y la de navegación se pintan del fondo claro (con
+  iconos oscuros), y hay icono adaptable (One UI lo recorta con su forma)
+  y pantalla de carga a juego.
 * Todo se mide en dp/sp y sigue el ancho de la ventana, así que respeta el
   tamaño de fuente y de pantalla que se elija en Ajustes de Samsung.
 

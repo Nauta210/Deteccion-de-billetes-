@@ -31,8 +31,9 @@ jobs:
             pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 \
             cmake libffi-dev libssl-dev libltdl-dev build-essential ccache
 
+      # Sin "cython<3": python-for-android 2026 compila con su propio Cython.
       - name: Instalar buildozer
-        run: pip install buildozer "cython<3" virtualenv setuptools
+        run: pip install buildozer virtualenv setuptools
 
       - name: Copiar el codigo de procesamiento al paquete Android
         run: python android/preparar_fuente.py
@@ -42,11 +43,36 @@ jobs:
           path: |
             ~/.buildozer
             android/.buildozer
-          key: buildozer-${{ hashFiles('android/buildozer.spec') }}
+          key: buildozer-${{ hashFiles('android/buildozer.spec', 'android/p4a-recipes/**') }}
 
+      # El registro completo se guarda en android/build.log. Con "shell: bash"
+      # el paso falla si buildozer falla, aunque la salida pase por tee.
       - name: Compilar APK
+        id: compilar
         working-directory: android
-        run: buildozer -v android debug
+        shell: bash
+        run: buildozer -v android debug 2>&1 | tee build.log
+
+      # Solo si falla: muestra las lineas utiles del error, ya filtradas, en
+      # lugar de obligar a buscar en un registro de decenas de miles de lineas.
+      - name: Resumen del error
+        if: failure()
+        working-directory: android
+        shell: bash
+        run: |
+          echo "=== Lineas con error (primeras 40) ==="
+          grep -n "FAILED:\|error:\|Error:\|ERROR\|Command failed\|BUILD FAILED" build.log | head -40 || true
+          echo
+          echo "=== Ultimas 60 lineas utiles ==="
+          grep -v "^\s*#\s*[A-Za-z_]* = '" build.log | tail -60 || true
+
+      - name: Guardar registro completo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: registro-compilacion
+          path: android/build.log
+          if-no-files-found: ignore
 
       - uses: actions/upload-artifact@v4
         with:
