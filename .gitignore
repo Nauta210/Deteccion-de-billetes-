@@ -1,0 +1,43 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# ---- Sistema ----
+.DS_Store
+Thumbs.db
+
+# ---- LaTeX (artefactos de compilacion) ----
+informe/*.aux
+informe/*.log
+informe/*.out
+informe/*.toc
+informe/*.bbl
+informe/*.blg
+informe/*.synctex.gz
+
+# ---- Datos generados ----
+# Las reproducciones simuladas se regeneran con:
+#   python scripts/simular_reproduccion.py datos/autentico datos/simulado 6.0
+# Son 47 MB de PNG derivados: no tiene sentido versionarlos.
+datos/simulado/
+
+# ---- Salidas del entrenamiento ----
+# Se regeneran con: python src/entrenar.py
+resultados/caracteristicas.npz
+resultados/figuras/
+
+# Se conservan en el repositorio porque son el resultado reportado
+# en el informe y permiten ejecutar la app sin reentrenar:
+!resultados/modelo.json
+!resultados/resultados.json
+!resultados/barrido.json
+
+# ---- Android ----
+# Se generan con: python android/preparar_fuente.py
+android/app/pdi/
+android/app/prototipo_pc.py
+android/.buildozer/
+android/bin/

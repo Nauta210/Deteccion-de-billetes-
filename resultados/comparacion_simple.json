@@ -1,0 +1,64 @@
+{
+  "resumen": {
+    "media": {
+      "autentico_media": 0.5795299385624113,
+      "autentico_sd": 0.027959193740547852,
+      "reproduccion_media": 0.7005433059776487,
+      "reproduccion_sd": 0.02830498507353815,
+      "cohen_d": -4.32317311025432,
+      "n_aut": 30,
+      "n_rep": 4
+    },
+    "desviacion": {
+      "autentico_media": 0.12960947458529404,
+      "autentico_sd": 0.01748563648776888,
+      "reproduccion_media": 0.0790457541798447,
+      "reproduccion_sd": 0.010174845275442086,
+      "cohen_d": 2.9857779437400644,
+      "n_aut": 30,
+      "n_rep": 4
+    },
+    "asimetria": {
+      "autentico_media": -0.8548242771801304,
+      "autentico_sd": 0.2512926829437583,
+      "reproduccion_media": -0.5241843617705392,
+      "reproduccion_sd": 0.2838622593693801,
+      "cohen_d": -1.2990561587889233,
+      "n_aut": 30,
+      "n_rep": 4
+    },
+    "energia_borde": {
+      "autentico_media": 0.22717367128043325,
+      "autentico_sd": 0.0343031941508044,
+      "reproduccion_media": 0.06479895543735134,
+      "reproduccion_sd": 0.017724311624545554,
+      "cohen_d": 4.905056029019218,
+      "n_aut": 30,
+      "n_rep": 4
+    },
+    "nitidez": {
+      "autentico_media": 0.014375292272654322,
+      "autentico_sd": 0.005482284481224753,
+      "reproduccion_media": 0.00032348102624377254,
+      "reproduccion_sd": 0.00018668469997890096,
+      "cohen_d": 2.692282842860797,
+      "n_aut": 30,
+      "n_rep": 4
+    },
+    "saturacion": {
+      "autentico_media": 0.17734535857446185,
+      "autentico_sd": 0.05044423822230567,
+      "reproduccion_media": 0.0851692557587266,
+      "reproduccion_sd": 0.0188421194591521,
+      "cohen_d": 1.9057725129476615,
+      "n_aut": 30,
+      "n_rep": 4
+    }
+  },
+  "n_autentico": 30,
+  "n_reproduccion": 4,
+  "denominaciones": [
+    "100mil",
+    "50mil"
+  ]
+}

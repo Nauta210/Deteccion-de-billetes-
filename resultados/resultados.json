@@ -1,0 +1,58 @@
+{
+  "fecha": "2026-09-24 00:45",
+  "constantes": {
+    "prototipos_matiz": {
+      "50mil": 270.0,
+      "100mil": 160.0
+    },
+    "tolerancia_matiz": 55.0,
+    "umbral_laplaciano": 0.00148
+  },
+  "n_imagenes": 42,
+  "segmentacion_ok": 40,
+  "tasa_segmentacion": 0.9523809523809523,
+  "matriz_confusion_denominacion": [
+    [
+      12,
+      0,
+      0
+    ],
+    [
+      0,
+      22,
+      0
+    ],
+    [
+      0,
+      0,
+      0
+    ]
+  ],
+  "etiquetas_confusion": [
+    "100mil",
+    "50mil",
+    "rechazo"
+  ],
+  "exactitud_denominacion": 1.0,
+  "n_denominacion": 34,
+  "autenticidad": {
+    "VP": 10.0,
+    "VN": 30.0,
+    "FP": 0.0,
+    "FN": 0.0,
+    "exactitud": 1.0,
+    "precision": 1.0,
+    "sensibilidad": 1.0,
+    "f1": 1.0,
+    "FNR": 0.0,
+    "FPR": 0.0
+  },
+  "rango_vlap_autentico": [
+    0.0033351120795902605,
+    0.026479276967191302
+  ],
+  "rango_vlap_reproduccion": [
+    0.0001670582545399786,
+    0.000655762890479218
+  ]
+}

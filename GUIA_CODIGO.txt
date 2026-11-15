@@ -1,0 +1,199 @@
+=====================================================================
+  GUIA DE REVISION DEL CODIGO
+=====================================================================
+
+  Si va a revisar un solo archivo, revise:
+
+        src/pdi/geometria.py
+
+  Contiene la estimacion de la homografia resolviendo el sistema
+  lineal 8x8 y el remapeo inverso con interpolacion bilineal, es
+  decir el calculo matricial y el recorte que sustituyen a
+  getPerspectiveTransform y warpPerspective. Son 250 lineas.
+
+  Si va a revisar tres:
+
+        src/pdi/geometria.py     transformacion de perspectiva
+        src/pdi/etiquetado.py    componentes conexas (sustituye findContours)
+        src/pdi/reglas.py        reglas de decision (no hay entrenamiento)
+
+
+=====================================================================
+  RETROALIMENTACION DE LA PRIMERA ENTREGA: DONDE QUEDO CADA PUNTO
+=====================================================================
+
+  1) Dilatacion geodesica
+     src/pdi/umbral.py       dilatacion_geodesica  (linea 124)
+                             reconstruccion_morfologica (linea 147)
+     Informe, Seccion IV-C-2. Se usa en la histeresis de la
+     umbralizacion y en el relleno de huecos.
+
+  2) Tras la mascara binaria, segmentar el billete sin fondo y ahi
+     hacer el mapa de saliencia
+     src/pdi/segmentacion.py      segmentar_sin_fondo
+     src/pdi/saliencia_billete.py mapas_del_billete
+     Informe, Seccion IV-H y Fig. 3.
+     El orden es: fotografia -> mascara binaria -> billete sin fondo
+     -> mapas. Son mapas DISTINTOS de los de la segmentacion: estos
+     responden a que zonas del billete diferencian un autentico de
+     una reproduccion, no a donde esta el billete.
+
+  3) Find contours: encontrar la forma con un rectangulo
+     src/pdi/contornos.py    trazar_contorno        (algoritmo de Moore)
+                             rectangulo_area_minima (calibradores rotantes)
+                             puntaje_billete        (ajuste a 140:66)
+     Informe, Seccion IV-E-2 y IV-E-4.
+     NO se usa cv2.findContours: el contorno se recorre pixel a pixel.
+
+  4) Combinacion por mapas de saliencia
+     src/pdi/segmentacion.py mapas_de_saliencia  (cuatro evidencias)
+                             segmentar           (seleccion entre ellas)
+     Informe, Seccion IV-B.
+     Cromatica, luminancia, brillo y borde, mas la combinada. La
+     region se elige por su ajuste a la forma del billete, de modo
+     que no hay que acertar de antemano que mapa sirve.
+
+  5) Metodo facil tras la morfologia: comparar la media de un billete
+     falso y uno real
+     scripts/comparacion_simple.py    medidas_de, main
+     Informe, Seccion VII-C.
+     Resultado: la media de intensidad NO separa las clases
+     (d = 0.54). Lo que separa es la energia de bordes y la varianza
+     del laplaciano. Es un resultado negativo y esta reportado.
+
+  6) Diagrama de caja y bigotes
+     scripts/comparacion_simple.py    main  ->  cajas_bigotes.png
+     Informe, Fig. 2.
+     Con los puntos individuales superpuestos, porque las muestras
+     son pequenas. El banco crecio de 30 a 46 imagenes; sigue siendo
+     limitado y esta declarado en las limitaciones.
+
+  7) Indicaciones para que el billete este plano y mensaje al usuario
+     src/prototipo_pc.py     revisar_encuadre
+     Informe, Seccion IV-J-3.
+     Si la relacion de aspecto medida sale de [1.45, 2.80] el sistema
+     informa que la fotografia no es utilizable y pide otra, en lugar
+     de dictaminar sobre una imagen que no puede rectificar bien.
+
+  RESTRICCION: no usar cv2.findContours ni warpPerspective
+     Cumplida, y ampliada: no se usa NINGUNA libreria de vision
+     artificial. Comprobacion:
+         grep -rn "cv2"     src/ scripts/   (sin coincidencias)
+         grep -rn "skimage" src/ scripts/   (sin coincidencias)
+
+     Los sustitutos, implementados desde su definicion:
+         findContours          -> etiquetado.py + contornos.py
+         getPerspectiveTransform -> geometria.py  homografia_dlt
+         warpPerspective       -> geometria.py  rectificar
+                                               interpolar_bilineal
+
+
+=====================================================================
+  DONDE ESTA CADA COSA
+=====================================================================
+
+  TEMA                          ARCHIVO                      FUNCION
+  ----                          -------                      -------
+  Luminancia ITU-R BT.601       src/pdi/color.py             rgb_a_gris
+  RGB a HSV                     src/pdi/color.py             rgb_a_hsv
+  Cromaticidad normalizada      src/pdi/segmentacion.py      cromaticidad
+  Constancia de color           src/pdi/reglas.py            balance_minkowski
+
+  Convolucion                   src/pdi/filtros.py           convolucionar
+  Nucleo gaussiano separable    src/pdi/filtros.py           suavizado_gaussiano
+  Sobel y gradiente             src/pdi/filtros.py           gradiente
+  Laplaciano                    src/pdi/filtros.py           laplaciano
+
+  Umbral de Otsu                src/pdi/umbral.py            otsu
+  Dilatacion y erosion          src/pdi/umbral.py            dilatar, erosionar
+  Apertura y cierre             src/pdi/umbral.py            abrir, cerrar
+  DILATACION GEODESICA          src/pdi/umbral.py            dilatacion_geodesica
+  Reconstruccion morfologica    src/pdi/umbral.py            reconstruccion_morfologica
+  Relleno de huecos             src/pdi/umbral.py            rellenar_huecos
+
+  Componentes conexas           src/pdi/etiquetado.py        etiquetar
+  Union-find                    src/pdi/etiquetado.py        ConjuntosDisjuntos
+  TRAZADO DE CONTORNO (Moore)   src/pdi/contornos.py         trazar_contorno
+  Rectangulo de area minima     src/pdi/contornos.py         rectangulo_area_minima
+  Puntaje de forma              src/pdi/contornos.py         puntaje_billete
+  Envolvente convexa (Andrew)   src/pdi/convexa.py           envolvente_convexa
+  Cuadrilatero de area maxima   src/pdi/convexa.py           cuadrilatero_desde_envolvente
+
+  HOMOGRAFIA (sistema 8x8)      src/pdi/geometria.py         homografia_dlt
+  INTERPOLACION BILINEAL        src/pdi/geometria.py         interpolar_bilineal
+  RECTIFICACION (mapeo inverso) src/pdi/geometria.py         rectificar
+  Error de reproyeccion         src/pdi/geometria.py         error_reproyeccion
+  Analisis de componentes ppal. src/pdi/geometria.py         ejes_principales
+
+  Mapas de saliencia (escena)   src/pdi/segmentacion.py      mapas_de_saliencia
+  Mapas sobre el billete        src/pdi/saliencia_billete.py mapas_del_billete
+  Estadisticos por bloques      src/pdi/saliencia_billete.py _por_bloques
+  Distancia de Mahalanobis      src/pdi/segmentacion.py      distancia_mahalanobis
+  Mascara binaria e histeresis  src/pdi/segmentacion.py      mascara_binaria
+  Seleccion por forma           src/pdi/segmentacion.py      candidatos, segmentar
+  Billete sin fondo             src/pdi/segmentacion.py      segmentar_sin_fondo
+
+  LBP                           src/pdi/descriptores.py      hist_lbp_uniforme
+  GLCM y Haralick               src/pdi/descriptores.py      glcm, descriptores_haralick
+  Transformada de Fourier       src/pdi/descriptores.py      espectro_magnitud
+  Energia radial                src/pdi/descriptores.py      energia_radial
+
+  REGLA 1 - denominacion        src/pdi/reglas.py            decidir_denominacion
+  Matiz por media circular      src/pdi/reglas.py            matiz_dominante
+  REGLA 2 - autenticidad        src/pdi/reglas.py            decidir_autenticidad
+  Medida de microtextura        src/pdi/reglas.py            medir_microtextura
+
+
+=====================================================================
+  PROGRAMAS EJECUTABLES
+=====================================================================
+
+  src/prototipo_pc.py            aplicacion con interfaz grafica
+  src/evaluar.py                 aplica las reglas al banco y reporta
+  src/analizar.py                figuras por etapa de una imagen
+  scripts/comparacion_simple.py  cajas y bigotes entre clases
+  scripts/comparacion_pareada.py experimento pareado (mismo encuadre)
+  scripts/recortar_capturas.py   recorte automatico de fotografias
+  scripts/simular_reproduccion.py trama de semitono simulada
+
+
+=====================================================================
+  SOBRE LAS LIBRERIAS
+=====================================================================
+
+  El proyecto NO usa ninguna libreria de vision artificial, sin
+  excepciones. Las tres dependencias son:
+
+      NumPy        algebra sobre arreglos
+      Pillow       leer y escribir archivos de imagen
+      Matplotlib   figuras del informe
+
+  Comprobacion directa:
+
+      grep -rn "cv2"     src/ scripts/     (no devuelve nada)
+      grep -rn "skimage" src/ scripts/     (no devuelve nada)
+
+  Toda la segmentacion, la rectificacion y la descripcion estan
+  implementadas en src/pdi/ a partir de sus definiciones matematicas.
+
+
+=====================================================================
+  NO HAY ENTRENAMIENTO
+=====================================================================
+
+  No existe ninguna etapa de aprendizaje, ningun archivo de modelo ni
+  parametros ajustados por un algoritmo de optimizacion. Las
+  constantes de decision estan escritas en src/pdi/reglas.py, lineas
+  30 a 90, con la justificacion de cada valor:
+
+      PROTOTIPOS_MATIZ     = {"50mil": 270, "100mil": 160}  grados
+      TOLERANCIA_MATIZ     = 55                             grados
+      UMBRAL_LAPLACIANO    = 1.48e-3
+
+  El umbral se obtiene como media geometrica entre el ejemplar
+  autentico de menor microtextura (3.34e-3) y la reproduccion de
+  mayor microtextura (6.6e-4), que son los extremos medidos sobre el
+  banco de datos. Las dos poblaciones no se solapan.
+
+  src/evaluar.py aplica estas constantes al banco y reporta la matriz
+  de confusion; no las modifica.

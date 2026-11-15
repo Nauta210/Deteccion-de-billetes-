@@ -1,0 +1,7 @@
+# Dependencias del proyecto. Ninguna es de vision artificial.
+numpy>=1.24          # algebra sobre arreglos
+Pillow>=9.5          # leer y escribir archivos de imagen
+matplotlib>=3.7      # figuras del informe
+
+# Solo si el banco de datos contiene archivos .HEIC (fotos de iPhone)
+pillow-heif>=0.13

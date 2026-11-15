@@ -1,0 +1,34 @@
+{
+  "pares": [
+    {
+      "autentico": {
+        "media": 0.49799945329698775,
+        "desviacion": 0.13254613852838507,
+        "energia_borde": 0.281169389760448,
+        "nitidez": 0.032153196816965185,
+        "saturacion": 0.1515892166840973,
+        "agudeza_borde": 1.3979316330607876,
+        "area_px": 622382.0,
+        "lado_mayor_px": 1408.7326613893933,
+        "aspecto": 2.0937127675031655,
+        "puntaje_forma": 0.7762782366909153,
+        "error_reproyeccion": 1.1758782372134494e-13
+      },
+      "didactico": {
+        "media": 0.6534464857679463,
+        "desviacion": 0.10351579460917297,
+        "energia_borde": 0.09595830901896979,
+        "nitidez": 0.0013063957463189772,
+        "saturacion": 0.10834489364772701,
+        "agudeza_borde": 3.7810218414142507,
+        "area_px": 531807.0,
+        "lado_mayor_px": 1211.23697158882,
+        "aspecto": 2.3300660132026403,
+        "puntaje_forma": 0.9147690656556248,
+        "error_reproyeccion": 1.4280183310454876e-13
+      },
+      "razon_tamano": 0.8598061255953355,
+      "archivo": "50mil_pareado_reverso.jpg"
+    }
+  ]
+}

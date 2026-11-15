@@ -1,0 +1,228 @@
+=====================================================================
+  DETECCION DE REPRODUCCIONES IMPRESAS DE BILLETES COLOMBIANOS
+  Prototipo de escritorio - Instrucciones de ejecucion
+=====================================================================
+  Juan Castano  (1202720)
+  Nicolas Moreno (1202437)
+  Andres Navia  (1202517)
+  Procesamiento Digital de Imagenes - Ingenieria Multimedia
+  Universidad Militar Nueva Granada
+
+
+  >> Para probarlo rapido, vea COMO_PROBAR.txt (4 pasos).
+  >> Este archivo es la referencia completa.
+
+
+=====================================================================
+  0. NO HAY ENTRENAMIENTO
+=====================================================================
+El sistema NO usa ningun clasificador entrenado. No hay etapa de
+aprendizaje, ni archivo de modelo, ni parametros ajustados por un
+algoritmo de optimizacion. La aplicacion se ejecuta directamente, sin
+paso previo.
+
+Las dos decisiones se toman con reglas explicitas cuyas constantes
+estan escritas en src/pdi/reglas.py:
+
+  REGLA 1 - Denominacion por matiz dominante
+     Tras corregir el iluminante, se mide el matiz dominante del
+     billete por media circular y se asigna la denominacion cuyo
+     prototipo quede mas cerca en el circulo cromatico.
+        50 mil  -> 270 grados (violeta)
+        100 mil -> 160 grados (verde azulado)
+        tolerancia 55 grados; fuera de ella se rechaza
+
+  REGLA 2 - Autenticidad por microtextura
+     Si la varianza del laplaciano medida sobre el billete es menor
+     que el umbral, se declara posible reproduccion impresa.
+        umbral tau = 1.48e-3
+
+     Origen del umbral: sobre el conjunto disponible las dos
+     poblaciones no se solapan. El autentico de menor microtextura
+     mide 3.34e-3 y la reproduccion de mayor microtextura 6.6e-4. El
+     umbral es la media geometrica de ambos extremos.
+
+Cada decision es auditable: el programa informa la magnitud medida y
+la constante con la que se comparo.
+
+
+=====================================================================
+  1. SOBRE LA IMPLEMENTACION
+=====================================================================
+El procesamiento NO usa librerias de vision artificial. Todo esta
+implementado desde su definicion matematica en src/pdi/:
+
+  Extraccion de la region       -> etiquetado de componentes conexas
+                                   (reemplaza findContours)
+  Seguimiento de frontera       -> algoritmo de Moore
+  Transformacion de perspectiva -> homografia DLT resolviendo el
+                                   sistema 8x8, mas remapeo inverso
+                                   con interpolacion bilineal
+                                   (reemplaza warpPerspective)
+  Umbralizacion                 -> metodo de Otsu
+  Morfologia                    -> dilatacion, erosion, apertura,
+                                   cierre, dilatacion geodesica y
+                                   reconstruccion morfologica
+  Envolvente convexa            -> cadena monotona de Andrew
+  Rectangulo de area minima     -> calibradores rotantes
+  Descriptores                  -> LBP, GLCM, DFT, laplaciano
+
+SIN EXCEPCIONES. Las tres dependencias del proyecto son NumPy, Pillow
+y Matplotlib. Una busqueda de cv2 o skimage en el codigo fuente no
+devuelve ninguna coincidencia.
+
+
+=====================================================================
+  2. PASOS EN VISUAL STUDIO CODE
+=====================================================================
+
+  PASO 1. Descomprimir el ZIP
+     Clic derecho sobre ProyectoBilletes.zip -> "Extraer todo".
+     Abrir el ZIP sin extraerlo NO sirve: Windows muestra el
+     contenido pero Python no puede leer dentro.
+
+  PASO 2. Abrir la carpeta en VS Code
+     VS Code -> Archivo -> Abrir carpeta...
+     Seleccionar la carpeta que contiene prototipo_pc.py dentro de
+     src/, es decir la carpeta llamada ProyectoBilletes.
+
+     Esto es importante: al abrir la CARPETA (no un archivo suelto),
+     la terminal se abre ya ubicada alli y no hay que escribir rutas.
+
+  PASO 3. Abrir la terminal integrada
+     VS Code -> Terminal -> Nueva terminal
+     Verificar que esta en el lugar correcto:
+
+         dir src\prototipo_pc.py        (Windows)
+         ls src/prototipo_pc.py         (macOS / Linux)
+
+     Si lista el archivo, todo bien. Si dice que no existe, no abrio
+     la carpeta correcta en el paso 2.
+
+  PASO 4. Instalar dependencias
+
+         pip install -r requirements.txt
+
+  PASO 5. Ejecutar el prototipo
+
+         python src/prototipo_pc.py
+
+     Se abre la ventana. No hay paso de entrenamiento previo.
+
+
+=====================================================================
+  3. COMO USAR EL PROTOTIPO
+=====================================================================
+El prototipo analiza una FOTOGRAFIA que usted selecciona. No usa
+camara: esta etapa busca validar el algoritmo de forma reproducible.
+La captura en vivo corresponde a la etapa siguiente, sobre telefono
+movil.
+
+  EJEMPLOS INCLUIDOS
+     El panel derecho trae una lista de imagenes del banco de datos.
+     Doble clic en cualquiera y la analiza de inmediato. Es la forma
+     mas rapida de demostrar el sistema.
+
+  FOTOGRAFIA PROPIA
+     Pulse "Seleccionar imagen". La fotografia debe cumplir:
+       - billete plano, sin dobleces
+       - tomada de frente, desde arriba
+       - billete entero, con margen alrededor
+       - fondo liso y de color distinto al billete
+
+  BOTONES
+     Seleccionar imagen   abre el explorador             (tecla O)
+     Analizar otra        vuelve al estado inicial       (tecla N)
+     Repetir voz          relee el ultimo resultado
+                                                         (Esc = salir)
+
+  LA VENTANA MUESTRA
+     arriba    la fotografia original
+     abajo     el billete rectificado al marco canonico
+     derecha   el veredicto y el diagnostico numerico
+
+  RESPUESTAS POSIBLES
+     "No se detectaron anomalias de impresion"  sin senales de copia
+     "Posible reproduccion impresa"             senales de copia
+     "La fotografia no es utilizable"           pide otra fotografia
+
+  La tercera NO es un error. La rectificacion supone un billete plano;
+  si la relacion de aspecto medida se aleja de la nominal (2.12), el
+  sistema prefiere pedir otra fotografia antes que dictaminar sobre
+  una imagen que no puede rectificar bien.
+
+
+=====================================================================
+  4. VERIFICAR DESDE LA TERMINAL, SIN INTERFAZ
+=====================================================================
+Para comprobar el algoritmo sin abrir ventana:
+
+    python src/prototipo_pc.py --imagen datos/autentico/50mil/IMG_2198.jpg
+       -> ESTADO: OK       holgura x15.54
+
+    python src/prototipo_pc.py --imagen datos/reproduccion/100mil/100mil_D01_S24FE_tenue_blanco_reverso.jpg
+       -> ESTADO: ALERTA   holgura x0.11
+
+    python src/prototipo_pc.py --imagen datos/autentico/100mil/IMG20250924094727.jpg
+       -> pide otra captura (foto oblicua, aspecto 3.04)
+
+Imprime el veredicto y el diagnostico en la terminal, sin abrir
+ventana.
+
+
+=====================================================================
+  5. SI ALGO FALLA
+=====================================================================
+  "can't open file 'prototipo_pc.py'"
+     La terminal esta en otra carpeta. Vea el PASO 3.
+
+  "No module named tkinter"
+     Windows y macOS: reinstalar Python desde python.org marcando la
+     opcion tcl/tk.
+     Linux:  sudo apt install python3-tk
+     Mientras tanto funciona el modo --imagen.
+
+  Error al instalar con pip, con mensajes de "building wheel" o
+  "Microsoft Visual C++"
+     La version de Python es demasiado reciente y no hay paquetes
+     precompilados. Instale Python 3.12 desde python.org y use:
+         py -3.12 -m pip install -r requirements.txt
+         py -3.12 src/prototipo_pc.py
+
+
+=====================================================================
+  6. REPRODUCIR LOS RESULTADOS DEL INFORME
+=====================================================================
+  python src/evaluar.py                        aplica las reglas y reporta
+  python scripts/comparacion_simple.py         cajas y bigotes
+  python scripts/comparacion_pareada.py datos/pareado/*.jpg
+                                               experimento pareado
+  python src/analizar.py datos/autentico/50mil/IMG_2198.jpg
+                                               figura de etapas
+
+  Salidas en resultados/ y resultados/figuras/.
+
+
+=====================================================================
+  7. ESTRUCTURA DEL CODIGO
+=====================================================================
+  src/pdi/io_utils.py       carga de imagenes y remuestreo
+  src/pdi/color.py          RGB a gris, RGB a HSV, cromaticidad
+  src/pdi/filtros.py        convolucion, gaussiano, Sobel, laplaciano
+  src/pdi/umbral.py         Otsu, morfologia, reconstruccion geodesica
+  src/pdi/etiquetado.py     componentes conexas (union-find)
+  src/pdi/contornos.py      frontera de Moore, rectangulo minimo
+  src/pdi/convexa.py        envolvente convexa, cuadrilatero maximo
+  src/pdi/geometria.py      homografia DLT, remapeo bilineal
+  src/pdi/descriptores.py   LBP, GLCM, Fourier, laplaciano
+  src/pdi/segmentacion.py   cadena completa y seleccion por forma
+  src/pdi/reglas.py         REGLAS DE DECISION (constantes fijas)
+
+  src/prototipo_pc.py       aplicacion de escritorio (interfaz)
+  src/evaluar.py            aplica las reglas y reporta metricas
+  src/analizar.py           figuras por etapa
+
+  scripts/                  simulacion, recorte, comparaciones
+  datos/                    banco de imagenes
+  informe/Entrega2.pdf      documento de la entrega
+  resultados/               modelo, metricas y figuras
